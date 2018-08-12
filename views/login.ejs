@@ -2,20 +2,29 @@
 <!Doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-
+    <meta charset="utf-8">  
+    <% if ( user['id'] !=="guest") {%>
+    <h2>Hello,  <%= user['id']%> !!</h2>
+     }  
     <title>  <h2>User Login page </body></h2> </title>
   </head>
+  <form action = "/logout" method = "POST">
+    <p><input type=  "submit" value= "Logout"> </input></p>
+  </form>
   <body>
-    <h2>User Login page </body></h2>
-    <form action = "/login" method = "POST">
+    
+   <%} else  { %>   
       <p>
+    <form action = "/login" method = "POST">
         <input type = "email" name="email" placeholder = "email" ></input>
         <input type = "password" name="password" placeholder = "password" ></input>
+       <input type=  "submit" value= "Login">  </input>
+      </p>
+    </form>
+  <p>Need an account ? Click <a href = "/register">here to register</p>
+    <% } %>
 
-       <input type=  "submit" value= "Submit">  </input>
-    </p>
-  </form>
+
   </body>
 </html>
 

@@ -1,9 +1,11 @@
 var express = require("express");
 var cookieParser = require('cookie-parser')
+const bcrypt = require('bcryptjs');
 
 var app = express();
 app.use(cookieParser());
 
+var flag = false;
 var PORT = 8080; // default port 8080
     // passing data to template which expects a value pair
 
@@ -40,14 +42,31 @@ const users = {
     id: "user4RandomID",
     email: "thisguy@example.com",
     password: "deeswasher-slums"
-  }
-}
+  },
+ "user2399omID": {
+    id: "user2399omID",
+    email: "fatjoe@tims.com",
+    password: "aaa"}
+};
 
 var urlDatabase = {
   "user3RandomID" : {'b2xVn2': 'http://www.lighthouselabs.ca'} ,
    "user4RandomID" : {'9sm5xK': 'http://www.google.com'} ,
    "user2RandomID"  :{'d62m3k': 'http://www.yahoo.com'},
-   "user4RandomID" : { 'g4YbR9': 'http://www.altavista.com'}
+   "user5RandomID" : { 'g4YbR9': 'http://www.altavista.com'}
+};
+
+var urlDB = {
+  "b2xVn2": {longURL: "http://www.lighthouselabs.ca",
+             userid: "user3RanID"},
+  "9sm5x7": {longURL: "http://www.google.com",
+             userid: "usr5RandomID"},
+  "b2xVn9": {longURL: "http://www.lighthouselabs.ca",
+             userid: "b2xVn2"},
+  "9te5xK": {longURL: "http://www.google.com",
+             userid: "user2RandomID"},
+  "3gDkE4": {longURL: "http://www.yahoo.com",
+             userid: "user4RandomID"}
 };
 
 function getUrls(user){
@@ -58,7 +77,6 @@ function getUrls(user){
 
 
 }
-
 
 
 function isEmpty(str){
@@ -172,13 +190,17 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  console.log('Login called !!');
-  // if cookie exists then send them to /urls
-  // else if no cookie -- then redirect them to registration page.
-  //if (req.cookies.user_id)
-  //  res.redirect("/urls");
-  //else
-    res.render("login");
+  if (req.cookies.user_id) {
+    var  userid = req.cookies.user_id;
+    let userObject = {id: userid,info:"something",urls:urlDatabase};
+    let templateVars = { user:userObject, urls:urlDatabase};
+    res.render("urls",templateVars);
+  } else {
+      userid = "guest";
+    let userObject = {id: userid,info:"something.com"};
+    let templateVars = { user:userObject, urls:urlDatabase};
+    res.render("login",templateVars);
+  }
 });
 
 app.get("/register", (req, res) => {
