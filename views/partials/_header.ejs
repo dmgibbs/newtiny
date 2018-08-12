@@ -1,0 +1,28 @@
+<html>
+  <b>Tiny App Version 0.0.1</b>
+
+    <% if (user) {%>
+      <h2> Hello, <%= user %> </h2>
+        <form action = "/logout" method = "POST">
+          <p>
+            <input type=  "submit" value= "Logout">  </input>
+          </p>
+        </form>
+    <%} else  {  %>
+    <div>
+      <div>
+        <form action = "/login" method = "POST">
+          <p>
+            <label for = "Username">  </label>
+            <input type = "text" name="name" value = "username" ></input>
+            <input type=  "submit" value= "Log In">  </input>
+          </p>
+        </form>
+      </div>
+      <div>
+        <a href= "/register">Register </a>
+      </div>
+    </div>
+    <%} %>
+
+</html>
