@@ -99,6 +99,13 @@ function storeUrl(userId){
   //urlDB[sUrl] = {longURL:lUrl, userid:userId};
 }
 
+function getUrls(user){
+  // Filters out specific urls  for a specific user. Returns empty if user has no entries
+  // associated with that ID.
+
+  var myUrls ={};
+}
+
 function fetchIdFromDB(email) {
  /*---------------------------------------------------------------
  * Returns the userId stored, based on the email for that user.
@@ -130,9 +137,15 @@ function foundEmail(DB,themail){
   return found;
 }
 
+function isUrlOwner(id,ListOfUrls)
+{  // checks if the user list has an associated matching url
+ // for (var url in ListOfUrls)
+
+}
+
 function foundPass(DB,passwd){
-// searches for a password in the user table.
-//returns true if password is found; false otherwise.
+// searches for an item in an list of objects.
+//returns true if key is found; false otherwise.
   var found = false;
   for (var key in DB){
     if (DB[key].password === passwd){
@@ -140,6 +153,19 @@ function foundPass(DB,passwd){
     }
   }
   return found;
+}
+function filterUrls(theDB, userId){
+// Parse the url List and return all short and long urls for that user
+  var mylist = {};
+
+  var keys = Object.keys();
+
+  for (var i=0;i < keys.length; i++)  {
+    let theId = theDB[keys[i]].uid;
+    if (theId === userId)
+      mylist[keys[i]] = theDB[keys[i]].url;
+  }
+  return mylist;
 }
 
 function fetchUser(id){
@@ -162,23 +188,28 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  console.log("cookie obj: "+req.cookies.user_id);
-  if (req.cookies && req.cookies.user_id) {
-    console.log(" cookies made."+ req.cookies.user_id);
-    var  userid = req.cookies.user_id;
-    let smallDB = urlsForUser(userid);
-    console.log("table for user: ", smallDB);
-    let templateVars = {user: fetchUser(userid), urls:smallDB};
-    res.render("urls_index", templateVars);      // Use template file urls_index.ejs located in views folder
-  }  else {
-    res.redirect("/login");
-  }
+    console.log("cookie obj: "+req.cookies.user_id);
+    if (req.cookies && req.cookies.user_id) {
+      console.log(" cookies made."+ req.cookies.user_id);
+      
+      var  userid = req.cookies.user_id;
+      let smallDB = urlsForUser(userid);
+      console.log("table for user: ", smallDB);
+      let templateVars = {user: fetchUser(userid), urls:urlDatabase};
+     
+      res.render("urls_index", templateVars);      // Use template file urls_index.ejs located in views folder
+    }
+    else{
+      res.redirect("/login");
+    }
 });
 
 app.get("/urls/new", (req, res) => {
+
   let  userid = req.cookies.user_id;
+
   let smallDB = urlsForUser(userid);
-  let templateVars = {user: fetchUser(userid), urls:smallDB};
+  let templateVars = {user: fetchUser(userid), urls:urlDatabase};
 
   // if user's cookie is not set then redirect to  /login
   if (!userid || userid === undefined) {
@@ -193,18 +224,19 @@ app.get("/urls/:id", (req, res) => {
   var  userid = req.cookies.user_id;
   let templateVars =
     {user: fetchUser(userid),shortUrl: req.params.id,
-    longUrl : urlDB[req.params.id].longURL};
+    longUrl : urlDatabase[req.params.id]};
   //let templateVars = { user:req.cookies.user_id,shortUrl: req.params.id,longUrl : urlDatabase[req.params.id] };
+
   res.render("urls_edit", templateVars);
 });
 
 app.get("/u/:shortUrl", (req, res) => {
-  let longUrl = urlDB[req.params.shortUrl];
+  let longUrl = urlDatabase[req.params.shortUrl];
   if (longUrl === undefined)  {
     res.send("Unable to find key supplied") ;
-  } else  {
-    res.redirect(longUrl);  // is this correct ???
   }
+  else  {  res.redirect(longUrl);}  // is this correct ???
+
 });
 
 app.get("/hello", (req, res) => {
@@ -223,29 +255,44 @@ app.post("/login", (req, res) => {
   
   var userEmail = req.body.email;
   var userPass = req.body.password;
+  console.log("List of Users:"+ users);
+  console.log ("user password is:",userPass);
+
   if (foundEmail(users,userEmail) && foundPass(users,userPass)) {
+    //var someId = fetchIdFromDB(userEmail);
     res.cookie('user_id',fetchIdFromDB(userEmail));
     res.redirect("/urls");
     return;
-  } else if ( foundEmail(users,userEmail) && !foundPass(users,userPass)){
+  }
+  else if ( foundEmail(users,userEmail) && !foundPass(users,userPass)){
     res.redirect("/login");
     return;
-  }  else  {
+  }
+  else
+  {
     res.redirect("/register");
     return;
   }
 });
 
 app.post("/urls", (req, res) => {
+  console.log("the request body stores: ",req.body);
   let longURL = req.body.longURL;
   let shortUrl = generateRandomString();
   let userid = req.cookies.user_id;
+  console.log("user id is :",req.cookies.user_id);
+  console.log("called routine to store longURL in db..");
+  urlDatabase[shortUrl]= longURL;
   urlDB[shortUrl]= {longURL: longURL,userid:userid};
+
+  // Update 2nd DB with users details
   res.redirect("/urls");
 });
 
 app.post("/urls/:id", (req, res) => {
   var longUrl = req.body.longUrl;
+  console.log(" called /urls/:id");
+  urlDatabase[req.params.id] = longUrl;
   urlDB[req.params.id] = longUrl;
   res.redirect("/urls");
 
@@ -258,11 +305,13 @@ app.post("/logout", (req, res) => {
 
 });
 
+
 app.post("/register", (req, res) => {
   var userEmail = req.body.email;
   var userPass = req.body.password;
   var username = req.body.name;
  
+
   if (isEmpty(userEmail) || isEmpty(userPass)){
     res.status(401);
     res.redirect("/register");
@@ -275,18 +324,33 @@ app.post("/register", (req, res) => {
       res.redirect("/login");
       return;
   }
-    //Error checks passed ; register this user.
+    // got this far; all ok - dump all contents to the users object
     let uid = generateRandomString();  // get a random Id
     res.cookie('user_id',uid);        // store this in cookie
+    
     users[uid]= {id: uid, email: userEmail, password: userPass}
     res.redirect("/login");
 });
 
 app.post("/urls/:id/delete", (req, res) => {
   let shortUrl = req.params.id;
-  delete urlDB[shortUrl];
+  console.log("request.params stores: ",req.params);
+  console.log('delete urls/id routine accessed : /id/delete');
+  // cookie stores id. if cookie's id matchs the id for that shortUrl
+  console.log("the current user doing delete: ",req.cookies.user_id);
+  //console.log("display of both dbs")
+//  console.log("UrlDB2 : ",urlDB);
+//  console.log("---------------------");
+//  console.log("Long url asked for :",urlDB[shortUrl].longURL);
+//  console.log("id for this shortUrl: ",urlDB[shortUrl].userid);
+  //if (isUrlOwner(req.cookies.userid, shortUrl))
+    delete urlDatabase[shortUrl];
+    delete urlDB;
+  //else  
+   // console.log("Sorry , Urls can only be deleted by their owners.")
   res.redirect("/urls");
 });
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });

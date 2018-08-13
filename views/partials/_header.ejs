@@ -2,7 +2,7 @@
   <b>Tiny App Version 0.0.1</b>
 
     <% if (user) {%>
-      <h2> Hello, <%= user %> </h2>
+      <h2> Hello, <%= user['id'] %> </h2>
         <form action = "/logout" method = "POST">
           <p>
             <input type=  "submit" value= "Logout">  </input>
