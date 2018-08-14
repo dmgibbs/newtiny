@@ -246,7 +246,9 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   var longUrl = req.body.longUrl;
-  urlDB[req.params.id] = longUrl;
+  console.log("EDITING", req.params.id, longUrl, urlDB)
+  urlDB[req.params.id].longURL = longUrl;
+  console.log("got to edit routine..");
   res.redirect("/urls");
 
 });
