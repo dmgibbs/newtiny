@@ -12,7 +12,7 @@
 
   <div>
   <% for (var item in urls ) {%>
-    <p><li>Short Url:<a href = "http://u/<%= item %>"><%= item %> </a>
+    <p><li>Short Url:<a href = "http://<%= urls[item] %>"><%= item %> </a>
     Long Url : <%= urls[item] %>
       <form action = "/urls/<%= item %>" method = "GET">
         <input type="submit" value = "Edit" name="edit"/>

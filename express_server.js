@@ -1,7 +1,19 @@
 var express = require("express");
 var cookieParser = require('cookie-parser')
 const bcrypt = require('bcrypt');
-
+/*----------------------------
+if (username && password && password_confirm) {
+    if (password === password_confirm) {
+bcrypt.hash(password, SALT_ROUNDS, (err, password_hashed) => {
+  if (err) {
+          console.log("There was an error hashing the password", err);
+        } else {
+          const user = {
+            id: nextUserId++,
+            username,
+            password: password_hashed
+};
+  */
 var app = express();
 app.use(cookieParser());
 
@@ -67,6 +79,14 @@ var urlDB = {
              userid: "user4RandomID"}
 };
 
+/*------------------------------------------------------
+* get the Id of who is logged in from the cookies variable
+--------------------------------------------------------*/
+function whoIsLoggedIn()
+{
+  let activeUser = req.cookies.user_id;
+  return activeUser
+};
 
 /*------------------------------------------------------
 * function generates list of urls created by that user
@@ -95,7 +115,6 @@ function  urlsForUser(userid){
 function storeUrl(userId){
   let lUrl = req.param.longUrl;
   let sUrl = req.param.shortUrl;
-  console.log(" Value of Long and ShortUrls:", lUrl,sUrl);
   //urlDB[sUrl] = {longURL:lUrl, userid:userId};
 }
 
@@ -134,6 +153,7 @@ function foundPass(DB,passwd){
 // searches for a password in the user table.
 //returns true if password is found; false otherwise.
   var found = false;
+ // bcrypt.compare(password, user.password, (err, result) => {
   for (var key in DB){
     if (DB[key].password === passwd){
       found = true;
@@ -148,10 +168,21 @@ function fetchUser(id){
 
   for (var theUser in users)  {
     if (users[theUser].id === id){
+      console.log(" match of user: ",users[theUser])
       return users[theUser];
+
     }
   }
 }
+
+function getShortUrls(theUser)
+{
+  
+
+
+}
+
+
 
 app.get("/", (req, res) => {
   res.end("Hello!");
@@ -162,12 +193,9 @@ app.get("/urls.json", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  console.log("cookie obj: "+req.cookies.user_id);
   if (req.cookies && req.cookies.user_id) {
-    console.log(" cookies made."+ req.cookies.user_id);
     var  userid = req.cookies.user_id;
     let smallDB = urlsForUser(userid);
-    console.log("table for user: ", smallDB);
     let templateVars = {user: fetchUser(userid), urls:smallDB};
     res.render("urls_index", templateVars);      // Use template file urls_index.ejs located in views folder
   }  else {
@@ -194,12 +222,12 @@ app.get("/urls/:id", (req, res) => {
   let templateVars =
     {user: fetchUser(userid),shortUrl: req.params.id,
     longUrl : urlDB[req.params.id].longURL};
-  //let templateVars = { user:req.cookies.user_id,shortUrl: req.params.id,longUrl : urlDatabase[req.params.id] };
   res.render("urls_edit", templateVars);
 });
 
 app.get("/u/:shortUrl", (req, res) => {
-  let longUrl = urlDB[req.params.shortUrl];
+  let longUrl = urlDB[req.params.shortUrl].longURL;
+  console.log("The long Url is : ",longUrl);
   if (longUrl === undefined)  {
     res.send("Unable to find key supplied") ;
   } else  {
@@ -246,9 +274,7 @@ app.post("/urls", (req, res) => {
 
 app.post("/urls/:id", (req, res) => {
   var longUrl = req.body.longUrl;
-  console.log("EDITING", req.params.id, longUrl, urlDB)
   urlDB[req.params.id].longURL = longUrl;
-  console.log("got to edit routine..");
   res.redirect("/urls");
 
 });
@@ -286,6 +312,10 @@ app.post("/register", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   let shortUrl = req.params.id;
+  //thisUser = whoisLoggedin();  // get id of current cookie user
+  // show shorturls of logged in person
+  //console.log("who is logged:", thisUser);
+  //console.log("their shortUrls",getshortUrls(thisUser));
   delete urlDB[shortUrl];
   res.redirect("/urls");
 });
