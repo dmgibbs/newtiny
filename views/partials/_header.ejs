@@ -1,15 +1,14 @@
 <html>
   <h2><b>Tiny App  0.0.1</b></h2>
-    <% if (user) {%>
+    <% if (user) { %>
       <h2> Hello there , <%= user['email'] %> </h2>
         <form action = "/logout" method = "POST">
           <p><input type=  "submit" value= "Logout"> </input></p>
         </form>
     <%} else  { %>
-      <div>
-        <div>
-          <a href= "/register">Register </a>
-        </div>
-      </div>
+          <div>
+            <p>Need an account ? Click <a href = "/register">here to register</a></p>
+            <p>Already a user, click <a href = "/login">here to login</a></p>
+          </div>
     <%} %>
 </html>

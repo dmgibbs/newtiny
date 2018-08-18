@@ -105,7 +105,6 @@ function  urlsForUser(userid){
         list[item] = urlDB[item].longURL;
       }
     }
-    //console.log("This user has this list of items:",list);
     if (list === {}){
       list = { "b2xVn2":
        {longURL: "http://www.lighthouselabs.ca",  userid: "user3RanID"}
@@ -132,7 +131,6 @@ function fetchIdFromDB(email) {
   for (var user in users)    {
     if (users[user]['email'] === email){   // if Emails match
       theId = users[user].id;  
-      console.log("im grabbing",theId);                 // grab the Id
       break;
     }
   }
@@ -177,7 +175,6 @@ function fetchUser(id){
     if (users[theUser].id === id){
       console.log(" match of user: ",users[theUser])
       return users[theUser];
-
     }
   }
 }
@@ -185,9 +182,11 @@ function fetchUser(id){
 
 
 app.get("/", (req, res) => {
-  //res.end("Hello!");
-  let errmsg = {err:"Page not Found"};
-  res.render("error",errmsg);
+  if (req.cookies && req.cookies.user_id) {
+    res.render("/urls",{user:{email:"john@here.com"}});    
+} else  {
+    res.render("login",{user: null});
+  }
 });
 
 app.get("/urls.json", (req, res) => {
@@ -214,7 +213,6 @@ app.get("/urls/new", (req, res) => {
 
   // if user's cookie is not set then redirect to  /login
   if (!userid || userid === undefined) {
-    console.log("redirect to login since no cookie found");
     res.redirect("/login");
   }
   else { res.render("urls_new",templateVars);}
@@ -244,11 +242,11 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.render("login");
+  res.render("login", {user: null});
 });
 
 app.get("/register", (req, res) => {
-   res.render("register");
+   res.render("register",{user: null});
 });
 
 app.post("/login", (req, res) => {
@@ -285,7 +283,6 @@ app.post("/urls/:id", (req, res) => {
   var longUrl = req.body.longUrl;
   urlDB[req.params.id].longURL = longUrl;
   res.redirect("/urls");
-
 });
 
 app.post("/logout", (req, res) => {
