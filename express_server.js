@@ -1,5 +1,4 @@
 var express = require("express");
-// var cookieParser = require('cookie-parser')
 var cookieSession = require("cookie-session");
 
 const bcrypt = require('bcrypt');
@@ -17,7 +16,6 @@ bcrypt.hash(password, SALT_ROUNDS, (err, password_hashed) => {
 };
   */
 var app = express();
-// app.use(cookieParser());
 
 var PORT = 8080; // default port 8080
 
@@ -198,7 +196,6 @@ function fetchUser(id) {
 
   for (var theUser in users) {
     if (users[theUser].id === id) {
-      console.log(" match of user: ", users[theUser])
       return users[theUser];
     }
   }
@@ -228,7 +225,6 @@ app.get("/urls", (req, res) => {
 
   if (req.session && req.session.user_id) {
     var userid = req.session.user_id;
-    console.log("This user has id of :", userid);
     let smallDB = urlsForUser(userid);
     let templateVars = {
       user: fetchUser(userid),
@@ -272,7 +268,6 @@ app.get("/urls/:id", (req, res) => {
 
 app.get("/u/:shortUrl", (req, res) => {
   let longUrl = urlDB[req.params.shortUrl].longURL;
-  console.log("The long Url is : ", longUrl);
   if (longUrl === undefined) {
     res.send("Unable to find key supplied");
   } else {
@@ -301,13 +296,8 @@ app.post("/login", (req, res) => {
   var userEmail = req.body.email;
   var userPass = req.body.password;
   if (foundEmail(users, userEmail) && foundPass(users, userPass)) {
-    console.log(" using this email :", userEmail);
-    console.log("He has id of :", fetchIdFromDB(userEmail));
-    // res.cookie("user_id", fetchIdFromDB(userEmail), {
-    //   maxAge: 10 * 60 * 1000
-    // });
+
     req.session.user_id = fetchIdFromDB(userEmail);
-    console.log('storing cookie-session of : ', req.session.user_id);
     res.redirect("/urls");
     return;
   } else if (foundEmail(users, userEmail) && !foundPass(users, userPass)) {
@@ -328,7 +318,6 @@ app.post("/urls", (req, res) => {
   let longURL = req.body.longURL;
   let shortUrl = generateRandomString();
 
-  //let userid = req.cookies.user_id;
   let userid = req.session.user_id;
 
 
@@ -346,10 +335,6 @@ app.post("/urls/:id", (req, res) => {
 });
 
 app.post("/logout", (req, res) => {
-  // res.cookie("express.sid", "", {
-  //   expires: new Date()
-  // });
-  // res.clearCookie('user_id');
 
   req.session = null;
   res.redirect("register");
@@ -365,12 +350,10 @@ app.post("/register", (req, res) => {
   if (isEmpty(userEmail) || isEmpty(userPass)) {
     res.status(401);
     res.redirect("/register");
-    console.log(" registering but email or pass empty");
     return;
   }
   if (foundEmail(users, userEmail)) {
     res.status(400);
-    console.log("attempting register on existing email")
     res.redirect("/login");
     return;
   }
@@ -397,11 +380,8 @@ app.post("/register", (req, res) => {
 
 app.post("/urls/:id/delete", (req, res) => {
   let shortUrl = req.params.id;
-  console.log("got to delete routine.")
   thisUser = whoIsLoggedIn(req.params.id); // get id of current cookie user
   //// show shorturls of logged in person
-  console.log("the user called delete &  logged:", thisUser);
-  //console.log("their shortUrls",getshortUrls(thisUser));
   delete urlDB[shortUrl];
   res.redirect("/urls");
 });
