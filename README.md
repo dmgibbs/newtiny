@@ -26,11 +26,11 @@ User Logged in.
 + The following modules will be required for this project.
 
 (Dependencies)
-+body-parser 1.18.3
-+cookie-session   2.0.0-beta.3
-+ejs: 1.0.0
-+express": 4.16.3
-+nodemon": 1.18.3
+*body-parser 1.18.3
+*cookie-session   2.0.0-beta.3
+*ejs: 1.0.0
+*express": 4.16.3
+*nodemon": 1.18.3
 
 
 
