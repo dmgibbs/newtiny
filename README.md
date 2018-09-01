@@ -25,16 +25,23 @@ User Logged in.
 # Project Dependencies
 + The following modules will be required for this project.
 
-(Dependencies)
-*body-parser 1.18.3
-*cookie-session   2.0.0-beta.3
-*ejs: 1.0.0
-*express": 4.16.3
-*nodemon": 1.18.3
+Dependencies
++body-parser 1.18.3
++cookie-session   2.0.0-beta.3
++ejs: 1.0.0
++express": 4.16.3
++nodemon": 1.18.3
 
 
+# Instructions on How to SETUP the App.
 
-# Instructions on How to use the App.
+1. Clone this repository from https://github.com/dmgibbs/newtiny
+2. Install dependencies using the `npm install` command.
+3. Start the web server using the `npm start` command. The app will be served at <http://localhost:8080/>.
+4. Go to <http://localhost:8080/> in your browser.
+
+
+# Instructions on How to USE the App to make TINYURLS!
 
 1. User registers from the main window, with a unique username and password
 2. User then "logs in" with the previously entered "username" and password.
