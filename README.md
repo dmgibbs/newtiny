@@ -31,7 +31,7 @@ Dependencies
 +ejs: 1.0.0
 +express": 4.16.3
 +nodemon": 1.18.3
-
++bcrypt" : 2.0.0
 
 # Instructions on How to SETUP the App.
 
