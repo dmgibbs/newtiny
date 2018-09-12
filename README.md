@@ -1,11 +1,6 @@
-#  TinyApp Project 
+# TinyApp Project 
 
 TinyApp is a full stack web application, built with node and express that allows users to shorten URLs.
-
-Finally submitting this project after managing to find time during the week #5 period, (remote week).
-
-Attempted to address missing features and the errors pointed out with the login/register module , as well as errors with deletions when user submitted urls.
-
 
 
 #Some Screenshots
@@ -25,13 +20,13 @@ User Logged in.
 # Project Dependencies
 + The following modules will be required for this project.
 
-Dependencies
+#Dependencies
 +body-parser 1.18.3
 +cookie-session   2.0.0-beta.3
 +ejs: 1.0.0
-+express": 4.16.3
-+nodemon": 1.18.3
-+bcrypt" : 2.0.0
++express : 4.16.3
++nodemon : 1.18.3
++bcrypt  : 2.0.0
 
 # Instructions on How to SETUP the App.
 
