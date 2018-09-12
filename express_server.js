@@ -1,11 +1,12 @@
 var express = require("express");
 var cookieSession = require("cookie-session");
-
 const bcrypt = require('bcrypt');
 
 var app = express();
 
 var PORT = 8080; // default port 8080
+const saltRounds = 10
+
 
 app.set("view engine", "ejs");
 const bodyParser = require("body-parser"); //to access POST request params. eg. req.body.longURL
@@ -33,21 +34,7 @@ const users = {
     email: "user@example.com",
     password: "purple-monkey-dinosaur"
   },
-  "user2RandomID": {
-    id: "user2RandomID",
-    email: "user2@example.com",
-    password: "dishwasher-funk"
-  },
-  "user3RandomID": {
-    id: "user3RandomID",
-    email: "anext1@example.com",
-    password: "purple-monkey-dinosaur"
-  },
-  "user4RandomID": {
-    id: "user4RandomID",
-    email: "thisguy@example.com",
-    password: "deeswasher-slums"
-  },
+ 
   "abc182d": {
     id: "abc182d",
     email: "fatjoe@tims.com",
@@ -55,13 +42,13 @@ const users = {
   }
 }
 
-var urlDatabase = {
-  'b2xVn2': 'http://www.lighthouselabs.ca',
-  '9sm5xK': 'http://www.google.com',
-  'd62m3k': 'http://www.yahoo.com',
-  'g4YbR9': 'http://www.altavista.com',
+// var urlDatabase = {
+//   'b2xVn2': 'http://www.lighthouselabs.ca',
+//   '9sm5xK': 'http://www.google.com',
+//   'd62m3k': 'http://www.yahoo.com',
+//   'g4YbR9': 'http://www.altavista.com',
 
-};
+// };
 
 var urlDB = {
   "b2xVn2": {
@@ -105,7 +92,6 @@ function generateRandomString() {
 function whoIsLoggedIn(shortU) {
   for (let keys in urlDB) {
     if (keys === shortU)
-      // console.log ("user is : -", user)   //.userid);
       console.log("routine called with  of : ", urlDB[keys].userid);
   }
   return shortU;
@@ -116,7 +102,7 @@ function whoIsLoggedIn(shortU) {
 --------------------------------------------------------*/
 function urlsForUser(userid) {
   let list = {};
-  for (var item in urlDB) {
+  for (let item in urlDB) {
     if (urlDB[item].userid === userid) {
       list[item] = urlDB[item].longURL;
     }
@@ -164,8 +150,8 @@ function isEmpty(str) {
  * returns true if key is found; false otherwise.
  *------------------------------------------------------------------------------*/
 function foundEmail(DB, themail) {
-  var found = false;
-  for (var key in DB) {
+  let found = false;
+  for (let key in DB) {
     if (DB[key].email === themail) {
       found = true;
     }
@@ -173,13 +159,17 @@ function foundEmail(DB, themail) {
   return found;
 }
 
-function foundPass(DB, passwd) {
-  // searches for a password in the user table.
-  //returns true if password is found; false otherwise.
-  var found = false;
+/*------------------------------------------------------------------------------
+ * Searches for an encrypted password in the user table.
+ * returns true if password is found; false otherwise.
+ *------------------------------------------------------------------------------*/
 
-  for (var key in DB) {
-    if (DB[key].password === passwd) {
+
+function foundPass(DB, passwd) {
+  let found = false;
+
+  for (let key in DB) {
+    if (bcrypt.compareSync(passwd, DB[key].password)) {
       found = true;
     }
   }
@@ -190,7 +180,7 @@ function fetchUser(id) {
   // using the ID, return an object storing the user information
   //return an empty object or return an object with info, found from user table
 
-  for (var theUser in users) {
+  for (let theUser in users) {
     if (users[theUser].id === id) {
       return users[theUser];
     }
@@ -204,7 +194,7 @@ app.get("/", (req, res) => {
   if (req.session && req.session.user_id) {
     res.render("/urls", {
       user: {
-        email: "john@here.com"
+        email: "guest@guestemail.com"
       }
     });
   } else {
@@ -225,7 +215,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
 
   if (req.session && req.session.user_id) {    // If user session exists and user is logged in 
-    var userid = req.session.user_id;          // get some data to render onto the template
+    let userid = req.session.user_id;          // get some data to render onto the template
     let smallDB = urlsForUser(userid);
     let templateVars = {
       user: fetchUser(userid),
@@ -261,7 +251,7 @@ app.get("/urls/new", (req, res) => {
 * This route allows user to modify the Long URL that was provided.
 *---------------------------------------------------------------------------*/
 app.get("/urls/:id", (req, res) => {
-  var userid = req.session.user_id;
+  let userid = req.session.user_id;
   let templateVars = {
     user: fetchUser(userid),
     shortUrl: req.params.id,
@@ -283,15 +273,17 @@ app.get("/u/:shortUrl", (req, res) => {
   }
 });
 
-app.get("/hello", (req, res) => {
-  res.end("<html><body>Hello <b>World</b></body></html>\n");
-});
+
+/* Route for the Login Screen */
 
 app.get("/login", (req, res) => {
   res.render("login", {
     user: null
   });
 });
+
+
+/* Route for the Registration Screen */
 
 app.get("/register", (req, res) => {
   res.render("register", {
@@ -306,8 +298,8 @@ app.get("/register", (req, res) => {
 *---------------------------------------------------------------------------*/
 app.post("/login", (req, res) => {
 
-  var userEmail = req.body.email;
-  var userPass = req.body.password;
+  let userEmail = req.body.email;
+  let userPass = req.body.password;
   if (foundEmail(users, userEmail) && foundPass(users, userPass)) {
 
     req.session.user_id = fetchIdFromDB(userEmail);
@@ -350,11 +342,10 @@ app.post("/urls", (req, res) => {
 * This route handles edits to the individual URLs 
 *---------------------------------------------------------------------------*/
 app.post("/urls/:id", (req, res) => {
-  var longUrl = req.body.longUrl;
+  let longUrl = req.body.longUrl;
   urlDB[req.params.id].longURL = longUrl;
   res.redirect("/urls");
 });
-
 
 /*---------------------------------------------------------------------------
 * This route handles logging out; clearing the session variable for user.
@@ -366,38 +357,39 @@ app.post("/logout", (req, res) => {
 
 });
 
-
 /*---------------------------------------------------------------------------
 * This route handles registration for users.  If user attempts to register with
 * an existing email, they are redirected to the login screen.
 *---------------------------------------------------------------------------*/
 
 app.post("/register", (req, res) => {
-  var userEmail = req.body.email;
-  var userPass = req.body.password;
-  var username = req.body.name;
-
+  let userEmail = req.body.email;
+  let userPass = req.body.password;
 
   if (isEmpty(userEmail) || isEmpty(userPass)) {
     res.status(401);
-    res.redirect("/register");
+    let errmsg = {
+      err: "Unable to register with empty username/password. Please try again."
+    };
+    res.render("error", errmsg);
     return;
   }
-  if (foundEmail(users, userEmail)) {
+  else if (foundEmail(users, userEmail)) {
     res.status(400);
-    res.redirect("/login");
+    let errmsg = {
+      err: "Not able to register with existing email. Please try again."
+    };
+    res.render("error", errmsg);
     return;
   }
-
   let uid = generateRandomString(); // get a random Id
-  //res.cookie('user_id', uid); // store this in cookie
+  let encryptedPassword = bcrypt.hashSync(userPass, saltRounds);
 
   req.session.user_id = uid;
-
   users[uid] = {
     id: uid,
     email: userEmail,
-    password: userPass
+    password: encryptedPassword
   }
   res.redirect("/login");
 
@@ -411,6 +403,7 @@ app.post("/urls/:id/delete", (req, res) => {
   let shortUrl = req.params.id;
   thisUser = whoIsLoggedIn(req.params.id); // get id of current cookie user
   //// show shorturls of logged in person
+  
   delete urlDB[shortUrl];
   res.redirect("/urls");
 });
